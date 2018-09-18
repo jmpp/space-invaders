@@ -1,0 +1,20 @@
+{
+  "name": "space-invaders",
+  "version": "1.0.0",
+  "description": "Space Invaders game in JavaScript Canvas 2D",
+  "main": "scripts/index.j",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "space",
+    "invaders",
+    "space",
+    "invaders"
+  ],
+  "author": "JM Cléry",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.6.0"
+  }
+}
