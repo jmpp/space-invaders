@@ -5,6 +5,7 @@ canvas.width = 480;
 canvas.height = 720;
 
 let player;
+let player_shot = null;
 
 const spritesheet = new Image();
 spritesheet.src = '../img/spritesheet.png';
@@ -31,10 +32,10 @@ spritesheet.onload = function() { // Fonction exécutée lorsque le navigateur a
 
 
 function update() {
-    if (keyboard.LEFT) {
+    if (Keyboard.LEFT) {
         player.x -= player.speed;
     }
-    if (keyboard.RIGHT) {
+    if (Keyboard.RIGHT) {
         player.x += player.speed;
     }
 
@@ -43,6 +44,25 @@ function update() {
     }
     else if (player.x + player.sprite.width > canvas.width) {
         player.x = canvas.width - player.sprite.width;
+    }
+
+    if (Keyboard.SPACE) {
+        if (player_shot === null) {
+            player_shot = {
+                x : player.x + player.sprite.width/2 - 2,
+                y : player.y,
+                width : 4,
+                height : 15,
+                color: '#fff'
+            };
+        }
+    }
+    if (player_shot !== null) {
+        player_shot.y -= 9;
+        
+        if (player_shot.y + player_shot.height < 0) {
+            player_shot = null;
+        }
     }
 }
 
@@ -63,6 +83,12 @@ function render() {
         player.sprite.width,
         player.sprite.height
     );
+
+    // Shot
+    if (player_shot !== null) {
+        context.fillStyle = player_shot.color;
+        context.fillRect(player_shot.x, player_shot.y, player_shot.width, player_shot.height);
+    }
 }
 
 function gameloop() {
@@ -72,7 +98,7 @@ function gameloop() {
     requestAnimationFrame(gameloop);
 }
 
-const KEY_MAP = {
+const keyMap = {
     37 : 'LEFT',
     38 : 'UP',
     39 : 'RIGHT',
@@ -80,17 +106,17 @@ const KEY_MAP = {
     32 : 'SPACE',
     27 : 'ECHAP'
 };
-const keyboard = {};
+const Keyboard = {};
 
 document.addEventListener('keydown', event => {
-    if (!KEY_MAP[event.keyCode])
+    if (!keyMap[event.keyCode])
         return;
 
-    keyboard[ KEY_MAP[event.keyCode] ] = true;
+    Keyboard[ keyMap[event.keyCode] ] = true;
 });
 document.addEventListener('keyup', event => {
-    if (!KEY_MAP[event.keyCode])
+    if (!keyMap[event.keyCode])
         return;
 
-    keyboard[ KEY_MAP[event.keyCode] ] = false;
+    Keyboard[ keyMap[event.keyCode] ] = false;
 });
