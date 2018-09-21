@@ -22,6 +22,7 @@ const aliensSpriteCoords = {
 };
 
 const NB_ALIENS_PER_LINE = 11; // Nombre d'aliens par ligne
+
 function generateAliens() {
     for (let i = 0, line = 0; i < aliensPos.length; i++) {
         if (i % NB_ALIENS_PER_LINE === 0) {
@@ -49,6 +50,8 @@ let aliensTimer = 1000; // intervalle de mouvements d'aliens en milli-secondes
 let lastAlienMovement = 0; // timecode du dernier déplacement des aliens
 let aliensDirection = 1; // Facteur multiplicateur pour gérer la direction des aliens (1 : droite, -1 : gauche)
 let alienSpriteTicker = 0; // Indicateur pour alterner les sprites
+let diedAliensIndex = []; // Tableau contenant les indices des aliens qui sont marqués comme morts
+let alienDiedTimer = 0; // Timer pour laisser apparaître momentanément l'animation de mort sur un alien touché
 
 function animateAliens() {
     // Mouvement des aliens de gauche à droite et vers le bas
@@ -58,15 +61,19 @@ function animateAliens() {
         let extremeLeftAlien = Math.min.apply(Math, aliens.map(alien => alien.x));
         let extremeRightAlien = Math.max.apply(Math, aliens.map(alien => alien.x)) + 30;
 
+        
         if (extremeLeftAlien - 12 < 0 && aliensDirection === -1 || extremeRightAlien + 12 > canvas.width && aliensDirection === 1) {
             aliensDirection *= -1;
             for (let i = 0; i < aliens.length; i++) {
+                if (diedAliensIndex.includes(i)) continue;
                 aliens[i].y += 22;
             }
             lastAlienMovement = Date.now();
         }
         else {
             for (let i = 0; i < aliens.length; i++) {
+                if (diedAliensIndex.includes(i)) continue;
+
                 aliens[i].x += 12 * aliensDirection; 
 
                 aliens[i].sprite.offsetX = aliensSpriteCoords[aliens[i].points][alienSpriteTicker % 2][0];
@@ -79,7 +86,39 @@ function animateAliens() {
         }
     }
 
-    
+    // Vérification si un alien se prend un tir
+    if (player_shot !== null) {
+        for (let i = 0; i < aliens.length; i++) {
+            if (diedAliensIndex.includes(i)) continue;
+
+            if (player_shot.x >= aliens[i].x &&
+                player_shot.x + player_shot.width <= aliens[i].x + aliens[i].sprite.width &&
+                player_shot.y <= aliens[i].y + aliens[i].sprite.height &&
+                player_shot.y + player_shot.height > aliens[i].y) {
+                // Collision!
+                aliens[i].x = aliens[i].x + aliens[i].sprite.width/2 - (26 / 2) | 0;
+                aliens[i].sprite.offsetX = 88;
+                aliens[i].sprite.offsetY = 25;
+                aliens[i].sprite.width = 26;
+                aliens[i].sprite.height = 16;
+                // Marquage de l'alien comme "tué", ce qui l'affichera avec le sprite de collision, juste avant de disparaître après un timer
+                diedAliensIndex.push(i);
+                alienDiedTimer = Date.now();
+                player_shot = null;
+                break;
+            }
+        }
+    }
+
+    // Suppression définitive des aliens marqués comme "tués"
+    for (let i = 0; i < diedAliensIndex.length; i++) {
+        if (Date.now() - alienDiedTimer > 100) {
+            aliens.splice(diedAliensIndex[i], 1);
+            diedAliensIndex.splice(i, 1);
+            i--;
+            alienDiedTimer = Date.now();
+        }
+    }
 }
 
 const spritesheet = new Image();
