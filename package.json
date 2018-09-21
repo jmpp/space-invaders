@@ -15,6 +15,7 @@
   "author": "JM Cléry",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^5.6.0"
+    "eslint": "^5.6.0",
+    "parcel-bundler": "^1.9.7"
   }
 }
