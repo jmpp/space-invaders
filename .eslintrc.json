@@ -25,6 +25,12 @@
         "semi": [
             "error",
             "always"
+        ],
+        "no-undef": [
+            0, 0
+        ],
+        "no-unused-vars": [
+            0, 0
         ]
     }
 }

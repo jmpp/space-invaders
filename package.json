@@ -2,7 +2,7 @@
   "name": "space-invaders",
   "version": "1.0.0",
   "description": "Space Invaders game in JavaScript Canvas 2D",
-  "main": "scripts/index.j",
+  "main": "scripts/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
