@@ -21,6 +21,7 @@ let diedAliensIndex = []; // Tableau contenant les indices des aliens qui sont m
 let alienDiedTimer = 0; // Timer pour laisser apparaître momentanément l'animation de mort sur un alien touché
 
 let alienSound = 0;
+let aliensShots = []; // Tableau qui servira à stocker les coordonnées des occasionnels tirs des aliens
 
 function createAliens() {
     
@@ -87,6 +88,9 @@ function animateAliens() {
             aliens[i].sprite.offsetY = aliensSpriteCoords[aliens[i].points][alienSpriteTicker % 2][1];
             aliens[i].sprite.width = aliensSpriteCoords[aliens[i].points][alienSpriteTicker % 2][2];
             aliens[i].sprite.height = aliensSpriteCoords[aliens[i].points][alienSpriteTicker % 2][3];
+
+            // Un alien peut occasionnellement tirer...
+            alienShot(aliens[i]);
         }
 
         // Son des aliens
@@ -136,6 +140,49 @@ function animateAliens() {
             alienDiedTimer = Date.now();
         }
     }
+
+    // Gestion des shoots aliens
+    for (let i = 0; i < aliensShots.length; i++) {
+        aliensShots[i].y += 5;
+
+        if (aliensShots[i].y > canvas.height) {
+            aliensShots.splice(i, 1);
+            i--;
+        }
+        else if (aliensShots[i].x > player.x &&
+                aliensShots[i].x + aliensShots[i].width < player.x + player.sprite.width &&
+                aliensShots[i].y + aliensShots[i].height >= player.y &&
+                aliensShots[i].y < player.y + player.sprite.height) {
+            // Moins 1 vie
+            player.lives--;
+            
+            // Game over ?
+            if (player.lives === 0) {
+                game_mode = MODE_GAME_OVER;
+                break;
+            }
+
+            // Suppression des tirs aliens en cours
+            aliensShots.length = 0;
+            // Suppression du tir joueur en cours
+            player.bullet = null;
+
+            // Changement du mode de jeu pour 2 secondes
+            game_mode = MODE_PLAYER_DEAD;
+            setTimeout(() => {
+                // Replacement du joueur à sa position initiale
+                player.x = 100;
+                player.y = 450;
+                
+                game_mode = MODE_PLAYING;
+            }, 2000);
+
+            // Son
+            sounds['player_death'].play();
+
+            break;
+        }
+    }
 }
 
 function renderAliens() {
@@ -154,5 +201,25 @@ function renderAliens() {
             aliens[i].sprite.width,
             aliens[i].sprite.height
         );
+    }
+
+    // Shot des aliens
+    for (let i = 0; i < aliensShots.length; i++) {
+        context.fillStyle = '#fff';
+        context.fillRect(aliensShots[i].x, aliensShots[i].y, aliensShots[i].width, aliensShots[i].height);
+    }
+}
+
+function alienShot(alien) {
+    if (Math.random() > 0.99) {
+        // Son
+        sounds['shoot'].play();
+        // Ajout d'un shoot alien dans le tableau correspondant
+        aliensShots.push({
+            x : alien.x + alien.sprite.width/2,
+            y : alien.y + alien.sprite.height,
+            width : 4,
+            height : 10
+        });
     }
 }

@@ -48,7 +48,7 @@ function animatePlayer() {
                 color: '#0f0'
             };
             // Son
-            sounds['player_shoot'].play();
+            sounds['shoot'].play();
         }
     }
     if (player.bullet !== null) {
@@ -61,6 +61,10 @@ function animatePlayer() {
 }
 
 function renderPlayer() {
+
+    // Permet de faire clignoter le vaisseau du joueur si on est en mode "Game Over"
+    if (game_mode === MODE_PLAYER_DEAD && timer % 6 < 3)
+        return;
 
     context.drawImage(
         player.sprite.img,
