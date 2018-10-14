@@ -20,8 +20,10 @@ let alienSpriteTicker = 0; // Indicateur pour alterner les sprites
 let diedAliensIndex = []; // Tableau contenant les indices des aliens qui sont marqués comme morts
 let alienDiedTimer = 0; // Timer pour laisser apparaître momentanément l'animation de mort sur un alien touché
 
-function createAliens() {
+let alienSound = 0;
 
+function createAliens() {
+    
     const aliens = [];
 
     for (let i = 0, line = 0; i < aliensPos.length; i++) {
@@ -86,6 +88,10 @@ function animateAliens() {
             aliens[i].sprite.width = aliensSpriteCoords[aliens[i].points][alienSpriteTicker % 2][2];
             aliens[i].sprite.height = aliensSpriteCoords[aliens[i].points][alienSpriteTicker % 2][3];
         }
+
+        // Son des aliens
+        sounds['invader' + (alienSound % 4)].play();
+        alienSound++;
     }
     
     // Vérification si un alien se prend un tir
@@ -106,7 +112,16 @@ function animateAliens() {
                 // Marquage de l'alien comme "tué", ce qui l'affichera avec le sprite de collision, juste avant de disparaître après un timer
                 diedAliensIndex.push(i);
                 alienDiedTimer = Date.now();
+                // Son
+                sounds['invader_killed'].play();
+                // Augmentation du score joueur
+                player.score += aliens[i].points;
                 player.bullet = null;
+                // Augmentation de la vitesse des aliens
+                aliensTimer -= 15;
+                if (aliensTimer < 75) {
+                    aliensTimer = 75;
+                }
                 break;
             }
         }

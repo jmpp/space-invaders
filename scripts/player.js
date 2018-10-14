@@ -6,6 +6,7 @@ function createPlayer() {
         y : 450,
         speed : 3,
         lives : 3,
+        score : 0,
         sprite : {
             img : spritesheet,
             offsetX : 88,
@@ -46,6 +47,8 @@ function animatePlayer() {
                 height : 15,
                 color: '#0f0'
             };
+            // Son
+            sounds['player_shoot'].play();
         }
     }
     if (player.bullet !== null) {

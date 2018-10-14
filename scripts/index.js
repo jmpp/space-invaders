@@ -1,11 +1,21 @@
+// audio by: http://www.classicgaming.cc/classics/space-invaders/sounds
+
 const canvas = document.getElementById('invaders');
 const context = canvas.getContext('2d');
 
 canvas.width = 480;
-canvas.height = 480;
+canvas.height = 540;
 
 let player;
 let aliens;
+const sounds = {
+    invader0 : document.getElementById('invader1'),
+    invader1 : document.getElementById('invader2'),
+    invader2 : document.getElementById('invader3'),
+    invader3 : document.getElementById('invader4'),
+    invader_killed : document.getElementById('invader_killed'),
+    player_shoot : document.getElementById('player_shoot')
+};
 
 const spritesheet = new Image();
 spritesheet.src = '../img/spritesheet.png';
@@ -27,6 +37,7 @@ function render() {
 
     renderPlayer(); // Dessin du joueur
     renderAliens(); // Dessin des aliens
+    renderUI(); // Dessin des éléments de l'interface
 }
 
 // Fonction gérant la boucle de jeu
