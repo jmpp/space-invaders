@@ -56,6 +56,15 @@ function animateAliens() {
 
     // Mouvement des aliens de gauche à droite et vers le bas
     if (Date.now() - lastAlienMovement > aliensTimer) {
+        // Vérification si un des aliens du groupe a atteint le joueur
+        // Pour cela, récupération des coordonnées de l'alien le plus bas dans le groupe
+        let extremeDownAlien = Math.max(...aliens.map(alien => alien.y));
+        if (extremeDownAlien + 16 >= player.y) {
+            player.lives = 0;
+            sounds['player_death'].play();
+            game_mode = MODE_GAME_OVER;
+        }
+
         // Vérification si un changement de direction du groupe d'aliens doit être effectué
         // Pour cela, récupération des coordonnées des 2 aliens se trouvants respectivement aux extrêmes gauche et droite du groupe
         let extremeLeftAlien = Math.min(...aliens.map(alien => alien.x));
@@ -173,7 +182,7 @@ function animateAliens() {
                 // Replacement du joueur à sa position initiale
                 player.x = 100;
                 player.y = 450;
-                
+
                 game_mode = MODE_PLAYING;
             }, 2000);
 
