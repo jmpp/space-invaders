@@ -24,10 +24,8 @@ const alienSprites = {
 };
 let aliensTimer = 1000; // intervalle de mouvements d'aliens en milli-secondes
 let lastAlienMovement = 0; // timecode du dernier déplacement des aliens
-let diedAliensIndex = []; // Tableau contenant les indices des aliens qui sont marqués comme morts
-let alienDiedTimer = 0; // Timer pour laisser apparaître momentanément l'animation de mort sur un alien touché
-
-let alienSound = 0;
+let alienSoundNb = 0; // numéro de son de l'alien (variera de 0 à 3, en boucle)
+let alienExplosions = []; // Tableau qui servira à stocker les sprites d'explosion
 let aliensShots = []; // Tableau qui servira à stocker les coordonnées des occasionnels tirs des aliens
 
 function createAliens() {
@@ -85,10 +83,6 @@ function animateAliens() {
         
         // Parcours du tableau d'aliens pour mise à jour
         for (let i = 0; i < aliens.length; i++) {
-            // Si l'ID de cet alien se trouve dans le tableau des aliens supprimés, on l'ignore ici.
-            if (diedAliensIndex.includes(i))
-                continue;
-
             // Si le groupe d'aliens touche un bord de l'écran, chaque alien change sa variable de direction, ainsi que sa position verticale (pour descendre d'un cran)
             if (aliensWallCollision) {
                 aliens[i].direction *= -1;
@@ -106,56 +100,48 @@ function animateAliens() {
         }
 
         // Son des aliens
-        sounds['invader' + (alienSound % 4)].play();
-        alienSound++;
+        sounds['invader' + (alienSoundNb % 4)].play();
+        alienSoundNb++;
     }
     
     // Vérification si un alien se prend un tir
     if (player.bullet !== null) {
         for (let i = 0; i < aliens.length; i++) {
-            if (diedAliensIndex.includes(i)) continue;
 
             if (player.bullet.x >= aliens[i].x &&
                 player.bullet.x + player.bullet.width <= aliens[i].x + aliens[i].width &&
                 player.bullet.y <= aliens[i].y + aliens[i].height &&
                 player.bullet.y + player.bullet.height > aliens[i].y) {
                 // Collision!
-                /* aliens[i].x = aliens[i].x + aliens[i].sprite.width/2 - (26 / 2) | 0;
-                aliens[i].sprite.offsetX = 88;
-                aliens[i].sprite.offsetY = 25;
-                aliens[i].sprite.width = 26;
-                aliens[i].sprite.height = 16; */
-                // Marquage de l'alien comme "tué", ce qui l'affichera avec le sprite de collision, juste avant de disparaître après un timer
-                diedAliensIndex.push(i);
-                alienDiedTimer = Date.now();
+                alienExplode(aliens[i]);
                 // Son
                 sounds['invader_killed'].play();
                 // Augmentation du score joueur
                 player.score += aliens[i].points;
                 player.bullet = null;
-                // Augmentation de la vitesse des aliens
+                // Augmentation de la vitesse générale des aliens
                 aliensTimer -= 15;
                 if (aliensTimer < 75) {
                     aliensTimer = 75;
                 }
+                // Suppression de l'alien du tableau
+                aliens.splice(i, 1);
                 break;
             }
         }
     }
 
-    // Suppression définitive des aliens marqués comme "tués"
-    for (let i = 0; i < diedAliensIndex.length; i++) {
-        if (Date.now() - alienDiedTimer > 100) {
-            aliens.splice(diedAliensIndex[i], 1);
-            diedAliensIndex.splice(i, 1);
+    // Suppression des animations d'explosion ayant dépassé les 100ms
+    for (let i = 0; i < alienExplosions.length; i++) {
+        if (Date.now() - alienExplosions[i].dateCreated > 100) {
+            alienExplosions.splice(i, 1);
             i--;
-            alienDiedTimer = Date.now();
         }
     }
 
     // Gestion des shoots aliens
     for (let i = 0; i < aliensShots.length; i++) {
-        aliensShots[i].y += 5;
+        aliensShots[i].y += aliensShots[i].speed;
 
         if (aliensShots[i].y > canvas.height) {
             aliensShots.splice(i, 1);
@@ -219,11 +205,42 @@ function renderAliens() {
         );
     }
 
+    // Explosions des aliens
+    for (let i = 0; i < alienExplosions.length; i++) {
+        context.drawImage(
+            spritesheet,
+    
+            alienExplosions[i].sprite.x,
+            alienExplosions[i].sprite.y,
+            alienExplosions[i].sprite.width,
+            alienExplosions[i].sprite.height,
+    
+            alienExplosions[i].x,
+            alienExplosions[i].y,
+            alienExplosions[i].sprite.width,
+            alienExplosions[i].sprite.height
+        );
+    }
+
     // Shot des aliens
     for (let i = 0; i < aliensShots.length; i++) {
         context.fillStyle = '#fff';
         context.fillRect(aliensShots[i].x, aliensShots[i].y, aliensShots[i].width, aliensShots[i].height);
     }
+}
+
+function alienExplode(alien) {
+    alienExplosions.push({
+        x : alien.x,
+        y : alien.y,
+        sprite : { // Coordonnées du sprite de l'explosion dans le spritesheet
+            x      : 88,
+            y      : 25,
+            width  : 26,
+            height : 16
+        },
+        dateCreated : Date.now()
+    });
 }
 
 function alienShot(alien) {
@@ -235,7 +252,8 @@ function alienShot(alien) {
             x : alien.x + alienSprites[alien.points][alien.spriteIndex].width/2,
             y : alien.y + alienSprites[alien.points][alien.spriteIndex].height,
             width : 4,
-            height : 10
+            height : 10,
+            speed : 5
         });
     }
 }
