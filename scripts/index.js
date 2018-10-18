@@ -25,7 +25,7 @@ const MODE_GAME_OVER   = 3;
 let game_mode = MODE_PLAYING;
 
 const spritesheet = new Image();
-spritesheet.src = '../img/spritesheet.png';
+spritesheet.src = 'img/spritesheet.png';
 spritesheet.onload = function() { // Fonction exécutée lorsque le navigateur a fini de charger le PNG
     player = createPlayer(); // Fabrication d'un objet joueur
     aliens = createAliens(); // Fabrication d'un tableau d'aliens
